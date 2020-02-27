@@ -57,12 +57,12 @@ class Tempotron:
         # lookup table
         # 相当于一个脉冲函数铺满整个时间窗
         t = numpy.array(list(range(0, T + dt, dt)))
-        lut1 = numpy.exp(-t / tau1)
+        lut1 = numpy.exp(-1 * t / tau1)
         lut2 = None
         if not use_single_exponential:
-            lut2 = numpy.exp(-t / tau2)
-        V0 = 1 / numpy.max(numpy.exp(-(numpy.array(list(range(0, 5 * tau1 + dt, dt)))) / tau1) - numpy.exp(
-            -(numpy.array(list(range(0, 5 * tau1 + dt, dt)))) / tau2))
+            lut2 = numpy.exp(-1 * t / tau2)
+        V0 = 1 / numpy.max(numpy.exp(-1 * (numpy.array(list(range(0, 5 * tau1 + dt, dt)))) / tau1) - numpy.exp(
+            -1 * (numpy.array(list(range(0, 5 * tau1 + dt, dt)))) / tau2))
         nOutputs = self.weights.shape[1]
         nNeuronPerOutput = self.weights.shape[2]
         nImages = 1 # len(self.PtnCell)
@@ -182,4 +182,4 @@ class Tempotron:
                         if Vmax <= 0:
                             tmax = t_latestRealEvt
                         if out:
-                            print(neuron + 1, indNeuronPerOutput + 1)
+                            print(neuron, indNeuronPerOutput)
