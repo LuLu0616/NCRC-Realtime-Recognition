@@ -102,7 +102,6 @@ def RemoveNulls(feat, num_feature):
 
 def ImplementRefraction(feat, refractory_period):
     feat.t = [i + refractory_period for i in feat.t]
-    print(len(feat.t))
     LastTime = np.zeros((max(feat.x) + 1, max(feat.y) + 1))
     for i in range(len(feat.t)):
         if feat.t[i] - LastTime[feat.x[i], feat.y[i]] > refractory_period:
@@ -236,7 +235,7 @@ def D_timesurface_realtime(TD, layer, ispool, pooling_extent, refractory_period)
                 if delta_t < tau:
                     lut_addr = int(round(delta_t / dt))
                     # print(radius+rx, radius+ry, lut_addr)
-                    S[radius + rx, radius + ry] = lut[lut_addr]
+                    S[radius + ry, radius + rx] = lut[lut_addr]
         t_last[yi, xi, pi] = ti
         if S.sum() == 0:
             output_index = num_feature
@@ -246,24 +245,26 @@ def D_timesurface_realtime(TD, layer, ispool, pooling_extent, refractory_period)
                 temp = C[:, :, index] - S
                 distance = np.linalg.norm(temp)
                 if distance < min_distance:
-                    distance = min_distance
+                    min_distance = distance
                     output_index = index
         feat.x[i] = TD.x[i]
         feat.y[i] = TD.y[i]
         feat.t[i] = TD.t[i]
         feat.p[i] = output_index
     feat = RemoveNulls(feat, num_feature)
+    print(len(feat.t))
     if ispool == 1:
         feat.x = [math.ceil(i / pooling_extent) for i in feat.x]
         feat.y = [math.ceil(i / pooling_extent) for i in feat.y]
         feat = ImplementRefraction(feat, refractory_period)
+        print(len(feat.t))
     return feat
 
 
 if __name__ == '__main__':
     # layer1 = Layer(radius=2, tau=20e3, num_feature=6, C=np.zeros((5, 5, 6)), count=0, alpha=0, beta=0, pk=np.ones((6, 1)), image_size=imsize0)          # train
     # layer2 = Layer(radius=4, tau=200e3, num_feature=18, C=np.zeros((9, 9, 18)), count=0, alpha=0, beta=0, pk=np.ones((18, 1)), image_size=imsize1)      # train
-    TD = read_dataset("MNIST_DVS_full_0_1000.mat")          # TD: 一段事件流
+    TD = read_dataset("MNIST_DVS_full_0_96.mat")          # TD: 一段事件流
     if reRunAll | reGetFeature:
         if min(TD.x) == 0 | min(TD.y) == 0:
             TD.x = [i + 1 for i in TD.x]
@@ -271,8 +272,8 @@ if __name__ == '__main__':
         layer1 = read_timesurface_params("STSF_params.mat", "layer1")           # realtest
         layer2 = read_timesurface_params("STSF_params.mat", "layer2")           # realtest
         # print(len(TD.t))
-        TD = D_timesurface_realtime(TD, 1, ispool1, poolsize1, 5e3)
-        TD = D_timesurface_realtime(TD, 2, ispool2, poolsize2, 5e3)
+        TD = D_timesurface_realtime(TD, 1, ispool1, poolsize1, 5e3)             # 10927
+        TD = D_timesurface_realtime(TD, 2, ispool2, poolsize2, 5e3)             # 7055
         # print(min(TD.x), min(TD.y))
         print("Feature Extraction End...")
     if reRunAll | reGenPtnCell:
