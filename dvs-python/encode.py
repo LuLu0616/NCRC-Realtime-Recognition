@@ -11,7 +11,7 @@ class Coding:
         for i in range(len(TD.t)):
             self.AllVec[i] = TD.t[i] / 1e3
             self.AllAddr[i] = TD.p[i] * self.size_x * self.size_y + (TD.x[i] - 1) * self.size_y + TD.y[i]
-        self.maxT = max(self.AllVec)
+        self.maxT = 2.861772000000000e+03
         for i in range(len(self.AllVec)):
             self.AllVec[i] = math.ceil(255 / self.maxT * self.AllVec[i])
         # self.AllVec = [math.ceil(255 / self.maxT * i) for i in self.AllVec]
