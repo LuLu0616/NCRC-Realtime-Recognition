@@ -220,7 +220,7 @@ def D_timesurface_realtime(TD, layer, ispool, pooling_extent, refractory_period)
     dt = 10
     t = np.arange(0, tau + dt, dt)
     lut = [math.exp(-1 * i / tau) for i in t]
-    t_last = np.ones((size_y + 2 * radius, size_x + 2 * radius, max(TD.p) + 1)) * tau * (-1)
+    t_last = np.ones((size_y + 2 * radius + 1, size_x + 2 * radius + 1, max(TD.p) + 1)) * tau * (-1)
     feat = TD
     for i in range(len(TD.t)):
         xi = TD.x[i] + radius
@@ -252,12 +252,12 @@ def D_timesurface_realtime(TD, layer, ispool, pooling_extent, refractory_period)
         feat.t[i] = TD.t[i]
         feat.p[i] = output_index
     feat = RemoveNulls(feat, num_feature)
-    print(len(feat.t))
+    # print(len(feat.t))
     if ispool == 1:
         feat.x = [math.ceil(i / pooling_extent) for i in feat.x]
         feat.y = [math.ceil(i / pooling_extent) for i in feat.y]
         feat = ImplementRefraction(feat, refractory_period)
-        print(len(feat.t))
+        # print(len(feat.t))
     return feat
 
 
@@ -265,10 +265,11 @@ if __name__ == '__main__':
     # layer1 = Layer(radius=2, tau=20e3, num_feature=6, C=np.zeros((5, 5, 6)), count=0, alpha=0, beta=0, pk=np.ones((6, 1)), image_size=imsize0)          # train
     # layer2 = Layer(radius=4, tau=200e3, num_feature=18, C=np.zeros((9, 9, 18)), count=0, alpha=0, beta=0, pk=np.ones((18, 1)), image_size=imsize1)      # train
     TD = read_dataset("MNIST_DVS_full_0_96.mat")          # TD: 一段事件流
-    if reRunAll | reGetFeature:
-        if min(TD.x) == 0 | min(TD.y) == 0:
+    if reRunAll or reGetFeature:
+        if min(TD.x) == 0 or min(TD.y) == 0:
             TD.x = [i + 1 for i in TD.x]
             TD.y = [i + 1 for i in TD.y]
+        TD.t = [i - TD.t[0] for i in TD.t]
         layer1 = read_timesurface_params("STSF_params.mat", "layer1")           # realtest
         layer2 = read_timesurface_params("STSF_params.mat", "layer2")           # realtest
         # print(len(TD.t))
@@ -276,13 +277,13 @@ if __name__ == '__main__':
         TD = D_timesurface_realtime(TD, 2, ispool2, poolsize2, 5e3)             # 7055
         # print(min(TD.x), min(TD.y))
         print("Feature Extraction End...")
-    if reRunAll | reGenPtnCell:
+    if reRunAll or reGenPtnCell:
         PtnCell = [0] * 100
         PtnCell[0] = Coding(TD)
         print("Encoding End...")
     # for i in range(len(TD.t)):
         # print(TD.x[i], TD.y[i], TD.p[i], TD.t[i], PtnCell.AllVec[i], PtnCell.AllAddr[i])
-    if reRunAll | reRealTimeTest:
+    if reRunAll or reRealTimeTest:
         weights = read_tempotron_weights("TrainedWt.mat")
         # weights = np.random.randn(nAfferents, noutputs, nNeuronPerOutput)
         obj = Tempotron(weights=weights, IsTraining=0, PtnCell=PtnCell, maxEpoch=1, lmd=lmd)
